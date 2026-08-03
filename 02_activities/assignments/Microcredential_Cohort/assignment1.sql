@@ -6,20 +6,18 @@
 --SELECT
 /* 1. Write a query that returns everything in the customer table. */
 --QUERY 1
-
-
-
-
+SELECT *
+From customer;
 --END QUERY
 
 
 /* 2. Write a query that displays all of the columns and 10 rows from the customer table, 
 sorted by customer_last_name, then customer_first_ name. */
 --QUERY 2
-
-
-
-
+Select *
+From customer
+Order by customer_last_name, customer_first_name
+LIMIT 10;
 --END QUERY
 
 
@@ -27,10 +25,10 @@ sorted by customer_last_name, then customer_first_ name. */
 /* 1. Write a query that returns all customer purchases of product IDs 4 and 9. 
 Limit to 25 rows of output. */
 --QUERY 3
-
-
-
-
+Select *
+From customer_purchases
+Where product_id IN (4,9)
+Limit 25;
 --END QUERY
 
 
@@ -42,10 +40,10 @@ filtered by customer IDs between 8 and 10 (inclusive) using either:
 Limit to 25 rows of output.
 */
 --QUERY 4
-
-
-
-
+Select *, (quantity * cost_to_customer_per_qty) as price
+From customer_purchases
+Where customer_id BETWEEN 8 AND 10
+Limit 25;
 --END QUERY
 
 
@@ -55,10 +53,12 @@ Using the product table, write a query that outputs the product_id and product_n
 columns and add a column called prod_qty_type_condensed that displays the word “unit” 
 if the product_qty_type is “unit,” and otherwise displays the word “bulk.” */
 --QUERY 5
-
-
-
-
+Select product_id, product_name,
+Case
+	When product_qty_type = 'unit' Then 'unit'
+	Else 'bulk'
+End as prod_qty_type_condensed
+From product;
 --END QUERY
 
 
@@ -66,10 +66,16 @@ if the product_qty_type is “unit,” and otherwise displays the word “bulk.�
 add a column to the previous query called pepper_flag that outputs a 1 if the product_name 
 contains the word “pepper” (regardless of capitalization), and otherwise outputs 0. */
 --QUERY 6
-
-
-
-
+Select product_id, product_name,
+Case
+	When product_qty_type = 'unit' Then 'unit'
+	Else 'bulk'
+End as prod_qty_type_condensed,
+Case
+	When product_name LIKE '%pepper%' Then 1
+	Else 0
+End as pepper_flag
+From product;
 --END QUERY
 
 
@@ -78,10 +84,12 @@ contains the word “pepper” (regardless of capitalization), and otherwise out
 vendor_id field they both have in common, and sorts the result by market_date, then vendor_name.
 Limit to 24 rows of output. */
 --QUERY 7
-
-
-
-
+select *
+From vendor v
+inner join vendor_booth_assignments vba
+on v.vendor_id = vba.vendor_id
+Order by vba.market_date, v.vendor_name
+Limit 24;
 --END QUERY
 
 
@@ -92,10 +100,10 @@ Limit to 24 rows of output. */
 /* 1. Write a query that determines how many times each vendor has rented a booth 
 at the farmer’s market by counting the vendor booth assignments per vendor_id. */
 --QUERY 8
-
-
-
-
+select vendor_id, 
+Count(*) as booth_rentals
+from vendor_booth_assignments
+group by vendor_id;
 --END QUERY
 
 
@@ -105,10 +113,14 @@ of customers for them to give stickers to, sorted by last name, then first name.
 
 HINT: This query requires you to join two tables, use an aggregate function, and use the HAVING keyword. */
 --QUERY 9
-
-
-
-
+select c.customer_id, c.customer_first_name, c.customer_last_name,
+Sum(cp.quantity * cp.cost_to_customer_per_qty) as total_spent
+From customer c
+inner join customer_purchases cp
+on c.customer_id = cp.customer_id
+group by c.customer_id, c.customer_first_name, c.customer_last_name
+Having total_spent > 2000
+Order by c.customer_last_name, c.customer_first_name;
 --END QUERY
 
 
@@ -124,36 +136,10 @@ When inserting the new vendor, you need to appropriately align the columns to be
 VALUES(col1,col2,col3,col4,col5) 
 */
 --QUERY 10
-
-
-
-
---END QUERY
-
-
--- Date
-/*1. Get the customer_id, month, and year (in separate columns) of every purchase in the customer_purchases table.
-
-HINT: you might need to search for strfrtime modifers sqlite on the web to know what the modifers for month 
-and year are! 
-Limit to 25 rows of output. */
---QUERY 11
-
-
-
-
---END QUERY
-
-
-/* 2. Using the previous query as a base, determine how much money each customer spent in April 2022. 
-Remember that money spent is quantity*cost_to_customer_per_qty. 
-
-HINTS: you will need to AGGREGATE, GROUP BY, and filter...
-but remember, STRFTIME returns a STRING for your WHERE statement...
-AND be sure you remove the LIMIT from the previous query before aggregating!! */
---QUERY 12
-
-
-
-
+drop table if exists temp.new_vendor;
+create table temp.new_vendor as
+select * 
+from vendor;
+insert into temp.new_vendor (vendor_id, vendor_name, vendor_type, vendor_owner_first_name, vendor_owner_last_name)
+values (10, 'Thomass Superfood Store', 'Fresh Focused', 'Thomas', 'Rosenthal');	
 --END QUERY
