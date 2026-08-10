@@ -56,7 +56,8 @@ The store wants to keep customer addresses. Propose two architectures for the CU
 **HINT:** search type 1 vs type 2 slowly changing dimensions. 
 
 ```
-Your answer...
+To overwrite customer address changes without keeping history, we should use an SCD Type 1 approach. In this case, the customer_address table would store the current address, with customer_id as the primary key, along with fields such as street, city, and postal code. When a customer updates their address, the existing row is updated using an UPDATE statement. However, using this approach removes any previous address information, so you can’t track previous changes.
+To keep the history of address changes, we should use an SCD Type 2 approach. In this table, we would include additional columns like start_date, end_date, and a current_address column that indicates which address is currently being used. When an address changes, the existing record is updated and marked as no longer current, and a new row is inserted with the updated address. This allows the database to keep a full history of all address changes over time.
 ```
 
 ***
